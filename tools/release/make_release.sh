@@ -25,7 +25,7 @@ set -euo pipefail
 
 REPO="$(cd "$(dirname "$0")/../.." && pwd)"
 PLAT="$REPO/src/platform/3ds"
-VERSION="" PACKAGE_ONLY=0 CIA_MEM=124 BANNER3D=1 OUTDIR="$REPO/dist"
+VERSION="" PACKAGE_ONLY=0 CIA_MEM=96 BANNER3D=1 OUTDIR="$REPO/dist"
 F3DSX="$PLAT/sims.3dsx" FCIA="$PLAT/sims.cia"
 
 usage() { sed -n '5,13p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
