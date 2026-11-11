@@ -206,22 +206,11 @@ jobs:
           base64 -d /tmp/sims_o3ds_v3.b64 | gzip -d > /tmp/sims_o3ds_v3.patch
           git apply --check /tmp/sims_o3ds_v3.patch
           git apply /tmp/sims_o3ds_v3.patch
-          # Correct mixed int/int32_t operands introduced by V3.
-          python3 - <<'PY'
-          from pathlib import Path
-          path = Path("src/world/World2D.cpp")
-          source = path.read_text()
-          fixes = {
-              "std::max(a, b - (cx1 - Composite.Width))": "std::max<int>(a, b - (cx1 - Composite.Width))",
-              "std::min(b, Composite.Width - ox)": "std::min<int>(b, Composite.Width - ox)",
-          }
-          for old, new in fixes.items():
-              if source.count(old) != 1:
-                  raise SystemExit(f"Expected one occurrence of {old!r}, found {source.count(old)}")
-              source = source.replace(old, new)
-          path.write_text(source)
-          print("V3 renderer C++ min/max compile fixes applied to World2D.cpp.")
-          PY
+          # The embedded V3 patch already includes the int32_t fixes.
+          # Verify its exact compiled code rather than modifying it a second time.
+          grep -Fq 'std::max<int>(a, b - (cx1 - static_cast<int>(Composite.Width)))' src/world/World2D.cpp
+          grep -Fq 'std::min<int>(b, static_cast<int>(Composite.Width) - ox)' src/world/World2D.cpp
+          echo 'Verified: V3 World2D.cpp renderer type fixes are present.'
           echo 'Applied V3 renderer changes. V2 changes are NOT inherited.'
       - name: Build Old 3DS XL playable .3dsx
         shell: bash
