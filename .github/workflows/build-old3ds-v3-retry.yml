@@ -1,4 +1,4 @@
-name: Sims3DS Old 3DS XL - V4 PIXEL Sims / lighter drawing
+name: Sims3DS Old 3DS XL - V5 Faster Sims / pixel graphics
 
 on:
   workflow_dispatch:
@@ -331,6 +331,63 @@ jobs:
           grep -Fq 'PixelStep = 2' src/world/World.cpp
           grep -Fq 'pixelStep = options.PixelStep == 2' src/vitaboy/AvatarRenderer.cpp
           echo 'V4 low-cost real 3D Sims enabled.'
+
+      - name: V5 repair slow-motion gameplay on occupied lots
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_one(file, old, new):
+              p = Path(file)
+              src = p.read_text()
+              hits = src.count(old)
+              if hits != 1:
+                  raise SystemExit(f"{file}: expected 1 match, got {hits}: {old[:100]!r}")
+              p.write_text(src.replace(old, new))
+
+          replace_one("src/platform/3ds/main.cpp",
+              "cfg.VMBudgetMs = isNew3DS ? 14.0 : 6.0;",
+              "cfg.VMBudgetMs = isNew3DS ? 14.0 : 12.0;")
+          replace_one("src/app/App.cpp",
+              "_Cfg.VMBudgetMs = ultra ? 6.0 : 10.0;",
+              "_Cfg.VMBudgetMs = ultra ? 12.0 : 14.0;")
+          old = """    double t0 = Now();
+    _UpdateAccum += ups * dtMs / 1000.0;
+    _UpdateAccum = std::min(_UpdateAccum, ups * 0.25 + 2); // never queue more than 1/4 s of catch-up
+    int n = (int)_UpdateAccum;
+    int done = 0;
+    while (done < n) {
+        s.Update(1);
+        done++;
+        if (_Cfg.VMBudgetMs > 0 && (Now() - t0) > _Cfg.VMBudgetMs) { _UpdateAccum = 0; break; }
+    }
+    if (done == n) _UpdateAccum -= n;
+"""
+          new = """    double t0 = Now();
+    // Old 3DS: maintain a bounded backlog instead of permanently discarding
+    // remaining simulation ticks whenever a busy lot exceeds the VM budget.
+    if (speed == 0) _UpdateAccum = 0.0;
+    _UpdateAccum += ups * dtMs / 1000.0;
+    _UpdateAccum = std::min(_UpdateAccum, ups * 0.25 + 2);
+    double vmBudget = _Cfg.VMBudgetMs;
+    if (vmBudget > 0 && _Cfg.LowEndWorldRenderDivisor > 1) {
+        // Prioritise Sims when the costly full-world drawing is skipped.
+        vmBudget *= (_FullWorldCountdown > 0 ? 1.5 : 0.65);
+    }
+    int n = (int)_UpdateAccum;
+    int done = 0;
+    while (done < n) {
+        s.Update(1);
+        done++;
+        if (vmBudget > 0 && (Now() - t0) > vmBudget) break;
+    }
+    _UpdateAccum = std::max(0.0, _UpdateAccum - done);
+"""
+          replace_one("src/app/App.cpp", old, new)
+          print("V5 gameplay: keep bounded VM tick backlog, prioritise simulation on cheap redraw frames.")
+          PY
       - name: Build Old 3DS XL playable .3dsx
         shell: bash
         run: |
@@ -338,15 +395,15 @@ jobs:
           make -C src/platform/3ds -j2
           test -s src/platform/3ds/sims.3dsx
           test "$(head -c4 src/platform/3ds/sims.3dsx)" = '3DSX'
-          mkdir -p /tmp/artifact/3ds/sims_v4_pixels
-          cp src/platform/3ds/sims.3dsx /tmp/artifact/3ds/sims_v4_pixels/sims.3dsx
-          if test -f src/platform/3ds/sims.smdh; then cp src/platform/3ds/sims.smdh /tmp/artifact/3ds/sims_v4_pixels/sims.smdh; fi
+          mkdir -p /tmp/artifact/3ds/sims_v5_fast_sims
+          cp src/platform/3ds/sims.3dsx /tmp/artifact/3ds/sims_v5_fast_sims/sims.3dsx
+          if test -f src/platform/3ds/sims.smdh; then cp src/platform/3ds/sims.smdh /tmp/artifact/3ds/sims_v5_fast_sims/sims.smdh; fi
           cat > /tmp/artifact/INSTALL.txt <<'EOF'
-          Sims3DS V4 Old 3DS XL - Pixelated real Sims (experimental)
+          Sims3DS V5 Old 3DS XL - Gameplay-scheduled real Sims (experimental)
           Backup existing sims.3dsx and all saves first.
-          Copy 3ds/sims_v4_pixels/ folder to SD:/3ds/sims_v4_pixels/
+          Copy 3ds/sims_v5_fast_sims/ folder to SD:/3ds/sims_v5_fast_sims/
           Your legitimate game data remains in SD:/3ds/sims/.
-          Launch this build from Homebrew Launcher (choose the one in sims_v4_pixels).
+          Launch this build from Homebrew Launcher (choose the one in sims_v5_fast_sims).
           SELECT + D-pad LEFT  = Faster real Sims (default)
           SELECT + D-pad RIGHT = Better detail / may run slower
           Both screens and sound remain enabled.
@@ -355,7 +412,7 @@ jobs:
       - name: Upload the finished build
         uses: actions/upload-artifact@v4
         with:
-          name: Sims3DS-O3DSXL-V4-Pixel-Sims
+          name: Sims3DS-O3DSXL-V5-Faster-Sims
           path: /tmp/artifact/
           retention-days: 30
           if-no-files-found: error
