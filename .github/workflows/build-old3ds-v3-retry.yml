@@ -1,4 +1,4 @@
-name: Sims3DS Old 3DS XL - V3 MINIMUM graphics / stability
+name: Sims3DS Old 3DS XL - V4 REAL Sims / smoother plots
 
 on:
   workflow_dispatch:
@@ -230,6 +230,44 @@ jobs:
           print("Verified and fixed both ARM C++ type mismatches in World.cpp.")
           PY
           echo 'Applied V3 renderer changes. V2 changes are NOT inherited.'
+
+          # V4: restore the actual Vitaboy 3D Sims on original 3DS,
+          # while preserving the proven V3 world frame-reuse and scenery optimisations.
+          python3 - <<'PY'
+          from pathlib import Path
+          def replace_one(path, before, after):
+              p = Path(path)
+              text = p.read_text()
+              count = text.count(before)
+              if count != 1:
+                  raise SystemExit(f"{path}: expected one occurrence of {before!r}, got {count}")
+              p.write_text(text.replace(before, after))
+          replace_one("src/app/App.cpp", "_Cfg.LowEndMinimalAvatars = ultra;", "_Cfg.LowEndMinimalAvatars = false;")
+          replace_one("src/app/App.cpp", "_Session->World()->LowDetailAvatars = ultra;", "_Session->World()->LowDetailAvatars = false;")
+          replace_one("src/platform/3ds/main.cpp", "cfg.LowEndMinimalAvatars = !isNew3DS;", "cfg.LowEndMinimalAvatars = false;")
+          p = Path("src/world/World.cpp")
+          content = p.read_text()
+          start = content.find("    if (LowDetailAvatars) {\n")
+          end = content.find("    auto& ws = State.WorldSpace;\n", start)
+          if start == -1 or end == -1 or start >= end:
+              raise SystemExit("Could not locate experimental 2D-marker rendering block")
+          content = content[:start] + content[end:]
+          extra = "    const auto avatarView = cam.ViewProjectionViewport(); // one matrix per frame, not per avatar\n"
+          if content.count(extra) != 1: raise SystemExit("Could not locate V3 avatar matrix")
+          content = content.replace(extra, "")
+          start = content.find("        // A broad projected cull avoids skinning")
+          end = content.find("        if (DrawAvatarShadows) DrawAvatarShadow", start)
+          if start == -1 or end == -1 or start >= end:
+              raise SystemExit("Could not locate risky avatar culling block")
+          content = content[:start] + content[end:]
+          if "if (LowDetailAvatars) {" in content or "const auto screen = " in content:
+              raise SystemExit("Old avatar-visibility branch still present")
+          p.write_text(content)
+          replace_one("src/platform/3ds/main.cpp",
+              'ultra ? "OLD 3DS: MINIMUM GRAPHICS" : "OLD 3DS: BETTER SIM GRAPHICS"',
+              'ultra ? "OLD 3DS: REAL SIMS FAST" : "OLD 3DS: REAL SIMS DETAIL"')
+          print("V4: Real Sims restored, risky avatar clipping removed; world caching remains.")
+          PY
       - name: Build Old 3DS XL playable .3dsx
         shell: bash
         run: |
@@ -237,15 +275,15 @@ jobs:
           make -C src/platform/3ds -j2
           test -s src/platform/3ds/sims.3dsx
           test "$(head -c4 src/platform/3ds/sims.3dsx)" = '3DSX'
-          mkdir -p /tmp/artifact/3ds/sims_v3_ultra
-          cp src/platform/3ds/sims.3dsx /tmp/artifact/3ds/sims_v3_ultra/sims.3dsx
-          if test -f src/platform/3ds/sims.smdh; then cp src/platform/3ds/sims.smdh /tmp/artifact/3ds/sims_v3_ultra/sims.smdh; fi
+          mkdir -p /tmp/artifact/3ds/sims_v4_real
+          cp src/platform/3ds/sims.3dsx /tmp/artifact/3ds/sims_v4_real/sims.3dsx
+          if test -f src/platform/3ds/sims.smdh; then cp src/platform/3ds/sims.smdh /tmp/artifact/3ds/sims_v4_real/sims.smdh; fi
           cat > /tmp/artifact/INSTALL.txt <<'EOF'
           Sims3DS V3 Old 3DS XL - MINIMUM GRAPHICS (experimental)
           Backup existing sims.3dsx and all saves first.
-          Copy 3ds/sims_v3_ultra/ folder to SD:/3ds/sims_v3_ultra/
+          Copy 3ds/sims_v4_real/ folder to SD:/3ds/sims_v4_real/
           Your legitimate game data remains in SD:/3ds/sims/.
-          Launch this build from Homebrew Launcher (choose the one in sims_v3_ultra).
+          Launch this build from Homebrew Launcher (choose the one in sims_v4_real).
           SELECT + D-pad LEFT  = Minimum graphics (default on Old 3DS XL)
           SELECT + D-pad RIGHT = Better graphics (V1-like Sims)
           Both screens and sound remain enabled.
@@ -254,7 +292,7 @@ jobs:
       - name: Upload the finished build
         uses: actions/upload-artifact@v4
         with:
-          name: Sims3DS-O3DSXL-V3-Minimum-Play-Test
+          name: Sims3DS-O3DSXL-V4-Real-Sims
           path: /tmp/artifact/
           retention-days: 30
           if-no-files-found: error
