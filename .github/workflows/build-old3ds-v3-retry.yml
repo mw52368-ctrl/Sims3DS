@@ -1,4 +1,4 @@
-name: Sims3DS Old 3DS XL - V4 REAL Sims / smoother plots
+name: Sims3DS Old 3DS XL - V4 PIXEL Sims / lighter drawing
 
 on:
   workflow_dispatch:
@@ -268,6 +268,69 @@ jobs:
               'ultra ? "OLD 3DS: REAL SIMS FAST" : "OLD 3DS: REAL SIMS DETAIL"')
           print("V4: Real Sims restored, risky avatar clipping removed; world caching remains.")
           PY
+
+      - name: V4 Pixelated Real Sims raster pass
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/PixelSimRaster.b64 <<'PIXELS'
+          H4sIAAAAAAAC/7UYa2/byPG7f8X0Q13RpGiRlhPbjH2XOEhbILkEsZu7axAcluRSYk1xieVSr7v0
+          t3dml09Zjh2gJwPmPua9szOzE6dJAuPxLFXAjksZHS9TxUKxOX65ZIrJjzyPueTSjYoCwkcADlIc
+          ryGJJ+enZ6euex4nJ9OzKXiTybPp9GA8Hj/K48C27cf5/PgjjD3/3HkGNn2eAy6USlaRgo+sVFze
+          MjnjCn4/APqFQmQQplmacyYdiHmh5re8VPXwZ5kqHhhQw+y6yrJ3IuYQ4WCw81qy1UdeVpk6Qo5M
+          lcGBTbtprk783xQU6ZpnN4oXcAlejZlkginYvhW4NnEniQPbf6S0j+MAjo8hytICJMtnHEQCas6R
+          tJA8NuIdwFckZHQ+PdE6n04db0pKL0UaNyrLFClkfNS3wCGgkpHISwU3keQ8/8QlLrLJvtVw4hiB
+          G2UWab5BOUsVX1ws2Hqk3GiDmOMENRJyNHFP0XUgITDLCnZw2brDTXON6yG050CNnmiQMRCZDj2B
+          EYKv4YoorOGPP4wUerqxQHJVybw2ulGh4Vgaqyu3PYPmbJCm2bwE30Kn0Kv0Q9u/zNJZDnzJ5QZU
+          bUJQwpwCW3BzojCTaexALpTeaAD/VoJY5ehfVR6X7oAuOUqazyDMRHRXovR3vNS4QqazNGcZ3KQL
+          PHmBa+VxwiLclpzFLET+rIRoXuV3G8O9T1ob57I2kg2eBYfwXy8YAGxqgM1egO8y8VdzLMrVzj6+
+          arysJP1y2ybP7Dl5mi9rx4ZjYKhPYPz23Hc8H2x/4tH3T3Ncs1U1HqGk9geF848OqFk7+zvOQr+d
+          vsIp66Yvd1w5JlXp7pKyY62skDBqtsnaZMAARy8utRFxaNutpz0BGuxL7b9WE7I6k/IJYvCJFCsH
+          uEdjz4xJYO7jONhF2eLOVgNVOKr0iM5luQf4CLZ0a7YhKzn8UH9tlAg3MKSmGAQvIMcwWCjZwyUb
+          n/2G2AXSRPyih1cYvMDY6p4F1sYC6wBHxgI07NnriRh7bdY4OFrtCk8MDg/JaO3Qb4dbGimXorKe
+          vdAzjMs4+8uoTRF6s/i8/gIvYGvdY9WYQosZiSy4v03SJOjZt3xN6HQd/MkzxzvH6+CdOieTP+86
+          7P5QQHJyvh5ffWAZVwpTzA+D+Wc9+WcepxiPPqdfvuDhm30dh3Blj4ZfAbe4VlSRkjUbt8m4DY8b
+          tigy/qpeHVUYIpT2TPzOrYaTgfoJIdD8u0B7uGvehuVk/ebN2YT+qp7z3XdZ8ldyWxud6Aime2CL
+          z5MvFERrHGs0GhGLQ/BPTy3EUdKCqys4s/bieru4GlnD90jMvkXCf4iE96xPI/S/ReTkISL+tE+E
+          fYMIHWpXJFn1XcB4sQc2blKCfd/xmriMgoCUTzTtI3Rms+8z8yPkwvB7Tf4IQca+1/z3CFKBAv7a
+          x3goVCGRFOScx1h25NkG/2F5Yi4uYEl1VxXA8lgvl1j9imQvQR7P+LE+0+N/faIkx2UhMpar0oXr
+          OY/uoOBybMoeDQaloGKlpIJ3s5dkyOdY+sOKZVmpRUiwgkixjOCBLm5xMUMieOkUxxq91MFKC9Iv
+          bfbG/pASJqZI/L7oqkmqbCj2Y+KmutIKwLbDzSCD7L36w2QVDrLVXswmRyKivydNhg/kyf20BnpR
+          UsM0ht+eXuu+Xutar/WDeg1uaJuuSNbPYZ2yyCexqKkeUvBeZDSBMawj44M4dYSUMmgC3mwWNIEr
+          DIMm/DAWPEH2Jrq0ousI8yCebetY8wDE1/vLXw92poPghcWCTTVWjOeB1QKNPT329djH8RBhS+tb
+          AqloVNFoSaMlgdr7acORPto+i26p5dQsDak0DFuEhm+70LBv8fcpq8vIWp5NYCrJWhaa+s3Ux2mH
+          ta2XtwRU1ZOKJst6siR4ey+XntY9Zj3Fezzv695j3aneSdBp3wkyNMDu+8XUMQRaexBC6JJsOnGe
+          Y0X2bOKcUUG2+9rX7zmzOHoj8V0YVknC5SFVHkI68O9X9Vy7c1OV/SxkFl8jtGyeSRgsl+Un09m4
+          gEKUqUoFPS5G3nhlHS2qbISLDtzc8ewVxlR8QpaYcS28kiu9Gy53NjdfMErgIzI33I4+pXx19EGK
+          /2CkRdJuy/cWH58RycIgxQQi1VzMJCvmaQQjliRYlFkOhfpEZDFwFs3xXYuZZMEwuq1hlWIioPfr
+          ai7ohSxZXmJAW7jGT3QEWyJLIV+80xhXGv1WmMp0VJLMuFC6ZbrlI6vJdnQuKMFj+DV0f8nFApFI
+          7aHchVtawmib6ucbfjDW7oDjKr09+pSxzKXWRQNI0yNYLYv2sTtoMinzxiXX8fBm+2fNG/f/70PG
+          lbuIiVKKgk65dF/vdrIwgWA26kFcd72s+jrg5qHUotXm7fVOeogfurVL8DH7+ZjqmuaWEdK8O+Ob
+          XYFuIixPHIjf7268TxIsUVpxTHOsTYPxe4eI2YhIzu2aflnbhxpsDxsQiP0LdSD4CfXZcPZrb8bW
+          tDfupr+20+C+G3dPqisolw+76w4cXTXJKywPWCRFiaWPPvHyOKEjL6m3xPRzb85ZQW0emQ/bDTm5
+          Ip1NUytYA6+vvbbn46xSAl99JiDg0RiGbhMhBo/Wd7ycHwHKMac0bSDGV7QaHMRPbAXPv92gnddt
+          4NOpP/GmseuenfvRxH/+5Dbw/PEm8Ny0lTzTDsWPbgHzvKKWGkOj7/Rxf4ef0IYOvGLRnQNvJNZE
+          uqtaN427m/reOGljslJdXFzT7YRbqr0vu4URlu8ODP5Z+uxfLsKU5+ptOpsrDBszLhauITGSQiwg
+          ow0HZnNR6paBqKTVa1M3z2PklWDRjAV0E79/+ekloFvF8NYAJGmGQQjPL4DcvJYpric6NOkiPMoE
+          eaECekzDFpm3vWr4MOhTd5U8FblSW5le41TBx6b2T3P9DqnbmaPnp3+FhK8QTBqGGHgk07bra/O6
+          LUwvMWVUTWzq9pow1tvcObprE8WGqxcXdJLBwf8ABLqXFb4YAAA=
+          PIXELS
+          base64 -d /tmp/PixelSimRaster.b64 | gzip -d > /tmp/PixelSimRaster.patch
+          git apply --check /tmp/PixelSimRaster.patch
+          git apply /tmp/PixelSimRaster.patch
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('src/world/World.cpp')
+          text = p.read_text()
+          old = 'FSO::Vitaboy::AvatarDrawOptions opt;\n        opt.DepthScale'
+          new = 'FSO::Vitaboy::AvatarDrawOptions opt;\n        opt.PixelStep = 2; // lower-cost textured 3D Sims on original 3DS\n        opt.DepthScale'
+          if text.count(old) != 1:
+              raise SystemExit('Could not locate actual Sim draw options')
+          p.write_text(text.replace(old, new))
+          PY
+          grep -Fq 'PixelStep = 2' src/world/World.cpp
+          grep -Fq 'pixelStep = options.PixelStep == 2' src/vitaboy/AvatarRenderer.cpp
+          echo 'V4 low-cost real 3D Sims enabled.'
       - name: Build Old 3DS XL playable .3dsx
         shell: bash
         run: |
@@ -275,24 +338,24 @@ jobs:
           make -C src/platform/3ds -j2
           test -s src/platform/3ds/sims.3dsx
           test "$(head -c4 src/platform/3ds/sims.3dsx)" = '3DSX'
-          mkdir -p /tmp/artifact/3ds/sims_v4_real
-          cp src/platform/3ds/sims.3dsx /tmp/artifact/3ds/sims_v4_real/sims.3dsx
-          if test -f src/platform/3ds/sims.smdh; then cp src/platform/3ds/sims.smdh /tmp/artifact/3ds/sims_v4_real/sims.smdh; fi
+          mkdir -p /tmp/artifact/3ds/sims_v4_pixels
+          cp src/platform/3ds/sims.3dsx /tmp/artifact/3ds/sims_v4_pixels/sims.3dsx
+          if test -f src/platform/3ds/sims.smdh; then cp src/platform/3ds/sims.smdh /tmp/artifact/3ds/sims_v4_pixels/sims.smdh; fi
           cat > /tmp/artifact/INSTALL.txt <<'EOF'
-          Sims3DS V3 Old 3DS XL - MINIMUM GRAPHICS (experimental)
+          Sims3DS V4 Old 3DS XL - Pixelated real Sims (experimental)
           Backup existing sims.3dsx and all saves first.
-          Copy 3ds/sims_v4_real/ folder to SD:/3ds/sims_v4_real/
+          Copy 3ds/sims_v4_pixels/ folder to SD:/3ds/sims_v4_pixels/
           Your legitimate game data remains in SD:/3ds/sims/.
-          Launch this build from Homebrew Launcher (choose the one in sims_v4_real).
-          SELECT + D-pad LEFT  = Minimum graphics (default on Old 3DS XL)
-          SELECT + D-pad RIGHT = Better graphics (V1-like Sims)
+          Launch this build from Homebrew Launcher (choose the one in sims_v4_pixels).
+          SELECT + D-pad LEFT  = Faster real Sims (default)
+          SELECT + D-pad RIGHT = Better detail / may run slower
           Both screens and sound remain enabled.
           Not hardware tested; if it crashes, return to your previous working version.
           EOF
       - name: Upload the finished build
         uses: actions/upload-artifact@v4
         with:
-          name: Sims3DS-O3DSXL-V4-Real-Sims
+          name: Sims3DS-O3DSXL-V4-Pixel-Sims
           path: /tmp/artifact/
           retention-days: 30
           if-no-files-found: error
