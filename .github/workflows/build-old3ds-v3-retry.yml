@@ -353,38 +353,8 @@ jobs:
           replace_one("src/app/App.cpp",
               "_Cfg.VMBudgetMs = ultra ? 6.0 : 10.0;",
               "_Cfg.VMBudgetMs = ultra ? 12.0 : 14.0;")
-          old = """    double t0 = Now();
-    _UpdateAccum += ups * dtMs / 1000.0;
-    _UpdateAccum = std::min(_UpdateAccum, ups * 0.25 + 2); // never queue more than 1/4 s of catch-up
-    int n = (int)_UpdateAccum;
-    int done = 0;
-    while (done < n) {
-        s.Update(1);
-        done++;
-        if (_Cfg.VMBudgetMs > 0 && (Now() - t0) > _Cfg.VMBudgetMs) { _UpdateAccum = 0; break; }
-    }
-    if (done == n) _UpdateAccum -= n;
-"""
-          new = """    double t0 = Now();
-    // Old 3DS: maintain a bounded backlog instead of permanently discarding
-    // remaining simulation ticks whenever a busy lot exceeds the VM budget.
-    if (speed == 0) _UpdateAccum = 0.0;
-    _UpdateAccum += ups * dtMs / 1000.0;
-    _UpdateAccum = std::min(_UpdateAccum, ups * 0.25 + 2);
-    double vmBudget = _Cfg.VMBudgetMs;
-    if (vmBudget > 0 && _Cfg.LowEndWorldRenderDivisor > 1) {
-        // Prioritise Sims when the costly full-world drawing is skipped.
-        vmBudget *= (_FullWorldCountdown > 0 ? 1.5 : 0.65);
-    }
-    int n = (int)_UpdateAccum;
-    int done = 0;
-    while (done < n) {
-        s.Update(1);
-        done++;
-        if (vmBudget > 0 && (Now() - t0) > vmBudget) break;
-    }
-    _UpdateAccum = std::max(0.0, _UpdateAccum - done);
-"""
+          old = "    double t0 = Now();\n    _UpdateAccum += ups * dtMs / 1000.0;\n    _UpdateAccum = std::min(_UpdateAccum, ups * 0.25 + 2); // never queue more than 1/4 s of catch-up\n    int n = (int)_UpdateAccum;\n    int done = 0;\n    while (done < n) {\n        s.Update(1);\n        done++;\n        if (_Cfg.VMBudgetMs > 0 && (Now() - t0) > _Cfg.VMBudgetMs) { _UpdateAccum = 0; break; }\n    }\n    if (done == n) _UpdateAccum -= n;\n"
+          new = "    double t0 = Now();\n    // Old 3DS: maintain a bounded backlog instead of permanently discarding\n    // remaining simulation ticks whenever a busy lot exceeds the VM budget.\n    if (speed == 0) _UpdateAccum = 0.0;\n    _UpdateAccum += ups * dtMs / 1000.0;\n    _UpdateAccum = std::min(_UpdateAccum, ups * 0.25 + 2);\n    double vmBudget = _Cfg.VMBudgetMs;\n    if (vmBudget > 0 && _Cfg.LowEndWorldRenderDivisor > 1) {\n        // Prioritise Sims when the costly full-world drawing is skipped.\n        vmBudget *= (_FullWorldCountdown > 0 ? 1.5 : 0.65);\n    }\n    int n = (int)_UpdateAccum;\n    int done = 0;\n    while (done < n) {\n        s.Update(1);\n        done++;\n        if (vmBudget > 0 && (Now() - t0) > vmBudget) break;\n    }\n    _UpdateAccum = std::max(0.0, _UpdateAccum - done);\n"
           replace_one("src/app/App.cpp", old, new)
           print("V5 gameplay: keep bounded VM tick backlog, prioritise simulation on cheap redraw frames.")
           PY
