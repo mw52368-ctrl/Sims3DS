@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   build-minimum-old3ds:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     container:
       image: devkitpro/devkitarm:latest
     env:
